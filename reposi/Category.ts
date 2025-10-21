@@ -5,12 +5,13 @@ export interface Category {
   tenDanhMuc: string;
 }
 
+// ✅ Thêm generic <Category[]>
 export const getCategories = async (): Promise<Category[]> => {
   try {
-    const response = await api.get<Category[]>("/api/DanhMuc");
+    const response = await api.get<Category[]>("/DanhMuc"); // ✅
     return response.data;
-  } catch (error: any) {
-    console.error("❌ Lỗi lấy danh mục:", error.response?.data || error.message);
+  } catch (error) {
+    console.error("Lỗi khi tải danh mục:", error);
     return [];
   }
 };

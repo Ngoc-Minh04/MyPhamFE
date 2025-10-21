@@ -3,21 +3,25 @@ import api from "../Service/api";
 export interface Product {
   id: number;
   tenSanPham: string;
-  moTa?: string;
+  moTa: string;
   gia: number;
-  hinhAnh?: string;
+  hinhAnh: string;
+  soLuong: number;
   danhMucId: number;
   tenDanhMuc: string;
 }
 
-// ✅ Hàm lấy danh sách sản phẩm (lọc theo danh mục)
+// ✅ Thêm generic <Product[]> vào api.get<>
 export const getProducts = async (danhMucId?: number): Promise<Product[]> => {
   try {
-    const url = danhMucId ? `/api/SanPham?danhMucId=${danhMucId}` : "/api/SanPham";
-    const response = await api.get<Product[]>(url);
+    const url = danhMucId
+      ? `/SanPham?danhMucId=${danhMucId}`
+      : `/SanPham`;
+
+    const response = await api.get<Product[]>(url); // ✅ Đúng kiểu
     return response.data;
-  } catch (error: any) {
-    console.error("❌ Lỗi lấy sản phẩm:", error.response?.data || error.message);
+  } catch (error) {
+    console.error("Lỗi khi tải sản phẩm:", error);
     return [];
   }
 };

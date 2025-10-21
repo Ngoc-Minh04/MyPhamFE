@@ -17,7 +17,7 @@ export interface ApiResponse<T = any> {
 
 export const registerUser = async (userData: RegisterRequest): Promise<ApiResponse> => {
   try {
-    const response = await api.post("/api/TaiKhoan/DangKy", userData);
+    const response = await api.post("/TaiKhoan/DangKy", userData);
     return {
       success: true,
       message: "Đăng ký thành công",
