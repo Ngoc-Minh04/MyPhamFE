@@ -1,0 +1,80 @@
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { addToCart } from "../reposi/Card";
+
+export default function ProductDetailScreen({ route }: any) {
+  const { product } = route.params;
+
+  const handleAddToCart = async () => {
+    const request = {
+      taiKhoanId: 6, // ⚠️ Thay bằng user đăng nhập thật
+      sanPhamId: product.id,
+      soLuong: 1,
+    };
+
+    const result = await addToCart(request);
+
+    if (result.success) {
+      Alert.alert("🛒 Thành công", result.message);
+    } else {
+      Alert.alert("❌ Lỗi", result.message);
+    }
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Image
+        source={{
+          uri:
+            product.hinhAnh ||
+            "https://cdn-icons-png.flaticon.com/512/679/679720.png",
+        }}
+        style={styles.image}
+      />
+      <View style={styles.infoContainer}>
+        <Text style={styles.name}>{product.tenSanPham}</Text>
+        <Text style={styles.price}>{product.gia.toLocaleString()}đ</Text>
+        {product.moTa && <Text style={styles.description}>{product.moTa}</Text>}
+      </View>
+
+      <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
+        <Text style={styles.addButtonText}>🛍️ Thêm vào giỏ hàng</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff" },
+  image: {
+    width: "100%",
+    height: 300,
+    resizeMode: "contain",
+    backgroundColor: "#f9f9f9",
+  },
+  infoContainer: { padding: 16 },
+  name: { fontSize: 20, fontWeight: "bold", color: "#333" },
+  price: {
+    fontSize: 18,
+    color: "#d63384",
+    fontWeight: "bold",
+    marginVertical: 8,
+  },
+  description: { fontSize: 15, color: "#555", lineHeight: 22, marginTop: 8 },
+  addButton: {
+    backgroundColor: "#d63384",
+    margin: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+});
