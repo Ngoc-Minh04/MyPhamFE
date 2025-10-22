@@ -6,6 +6,8 @@ import { getPaymentHistory, performPayment } from '../reposi/Payment';
 
 export default function OrderDetailScreen({ route }: any) {
   const donHangId: number = route?.params?.donHangId;
+  const ngayDatFromList: string | undefined = route?.params?.ngayDat;
+  const trangThaiFromList: string | undefined = route?.params?.trangThai;
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
@@ -62,14 +64,14 @@ export default function OrderDetailScreen({ route }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Đơn #{detail.id}</Text>
-      <Text style={styles.meta}>Ngày đặt: {detail.ngayDat}</Text>
-      <Text style={styles.meta}>Trạng thái: {detail.trangThai}</Text>
+      <Text style={styles.header}>Đơn #{detail.id || ''}</Text>
+      <Text style={styles.meta}>Ngày đặt: {detail.ngayDat || ngayDatFromList || '-'}</Text>
+      <Text style={styles.meta}>Trạng thái: {detail.trangThai || trangThaiFromList || '-'}</Text>
 
       <Text style={styles.section}>Sản phẩm</Text>
       <FlatList
         data={detail.chiTietDonHangs || []}
-        keyExtractor={(i) => String(i.id)}
+        keyExtractor={(_, idx) => String(idx)}
         renderItem={({ item }) => (
           <View style={styles.itemRow}>
             <Text style={{ flex: 1 }}>{item.tenSanPham || `SP #${item.sanPhamId}`}</Text>

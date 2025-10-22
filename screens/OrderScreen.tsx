@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser } from '../contexts/UserContext';
-import { getOrderDetail } from '../reposi/Order';
+import { getOrderDetail, getOrdersByUser, OrderSummary } from '../reposi/Order';
 
 export default function OrderScreen({ route, navigation }: any) {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // If backend has an order list endpoint, you can replace this with GET /DonHang/LayTheoTaiKhoan/{id}
   // For now, when focusId is provided, we fetch that detail and display as a single card.
@@ -18,6 +19,12 @@ export default function OrderScreen({ route, navigation }: any) {
       loadSingle(focusId);
     }
   }, [focusId]);
+
+  useEffect(() => {
+    if (user) {
+      loadList();
+    }
+  }, [user]);
 
   const loadSingle = async (donHangId: number) => {
     try {
@@ -37,13 +44,41 @@ export default function OrderScreen({ route, navigation }: any) {
   };
 
   const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('OrderDetail', { donHangId: item.id })}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate('OrderDetail', {
+          donHangId: item.id,
+          ngayDat: item.ngayDat || item.date,
+          trangThai: item.trangThai || item.status,
+        })
+      }
+    >
       <Text style={styles.code}>Mã đơn: {item.id}</Text>
-      <Text>Ngày đặt: {item.date || '-'}</Text>
-      <Text>Tổng tiền: {Number(item.total || 0).toLocaleString()}đ</Text>
-      <Text style={[styles.status, { color: '#d63384' }]}>{item.status || 'Đang xử lý'}</Text>
+      <Text>Ngày đặt: {item.ngayDat || item.date || '-'}</Text>
+      <Text>Tổng tiền: {Number(item.tongTien ?? item.total ?? 0).toLocaleString()}đ</Text>
+      <Text style={[styles.status, { color: '#d63384' }]}>{item.trangThai || item.status || 'Đang xử lý'}</Text>
     </TouchableOpacity>
   );
+
+  const loadList = async () => {
+    try {
+      setLoading(true);
+      const res = await getOrdersByUser(user!.id);
+      if (res.success && res.data) {
+        // với /DonHang/DanhSach/{taiKhoanId} dữ liệu đã đúng field, không cần map mạnh tay
+        setOrders(res.data as any);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadList();
+    setRefreshing(false);
+  }, [user]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,6 +90,7 @@ export default function OrderScreen({ route, navigation }: any) {
           data={orders}
           keyExtractor={item => String(item.id)}
           renderItem={renderItem}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#777' }}>Chưa có dữ liệu đơn hàng</Text>}
         />
       )}

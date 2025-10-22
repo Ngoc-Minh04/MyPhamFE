@@ -77,7 +77,60 @@ export const createOrder = async (
 export const getOrderDetail = async (donHangId: number): Promise<ApiResponse<OrderDetailResponse>> => {
   try {
     const res = await api.get(`/DonHang/ChiTiet/${donHangId}`);
-    return { success: true, data: res.data };
+    const raw: any = res.data;
+    const d: any = raw?.data ?? raw; // unwrap if backend returns { data: {...} }
+
+    const normalized: OrderDetailResponse = {
+      id: d.id ?? d.donHangId ?? 0,
+      taiKhoanId: d.taiKhoanId ?? d.accountId ?? 0,
+      ngayDat: d.ngayDat ?? d.ngayTao ?? d.createdAt ?? "",
+      tongTien: d.tongTien ?? d.tongSoTien ?? d.total ?? 0,
+      trangThai: d.trangThai ?? d.status ?? "",
+      chiTietDonHangs: (d.chiTietDonHangs ?? d.chiTiet ?? d.items ?? []).map((it: any) => ({
+        id: it.id ?? 0,
+        sanPhamId: it.sanPhamId ?? it.productId ?? 0,
+        soLuong: it.soLuong ?? it.quantity ?? 0,
+        donGia: it.donGia ?? it.price ?? 0,
+        tenSanPham: it.tenSanPham ?? it.productName,
+        hinhAnh: it.hinhAnh ?? it.image,
+      })),
+    };
+
+    return { success: true, data: normalized };
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.message || error.message };
+  }
+};
+
+// -------- List orders by user --------
+export interface OrderSummary {
+  id: number;
+  date?: string;
+  total?: number;
+  status?: string;
+}
+
+export const getOrdersByUser = async (taiKhoanId: number): Promise<ApiResponse<OrderSummary[]>> => {
+  try {
+    // 1) Ưu tiên endpoint mới: /DonHang/DanhSach/{taiKhoanId}
+    try {
+      const res = await api.get(`/DonHang/DanhSach/${taiKhoanId}`);
+      const raw: any = res.data;
+      const arr: any[] = Array.isArray(raw) ? raw : (raw?.data ?? raw?.danhSach ?? []);
+      return { success: true, data: arr };
+    } catch (eDanhSach: any) {
+      // 2) Thử /DonHang/LayTheoTaiKhoan/{id}
+      try {
+        const res2 = await api.get(`/DonHang/LayTheoTaiKhoan/${taiKhoanId}`);
+        const data2 = (res2.data as any)?.data ?? res2.data;
+        return { success: true, data: data2 };
+      } catch (eOld: any) {
+        // 3) Fallback query: /DonHang?taiKhoanId=xxx
+        const res3 = await api.get(`/DonHang`, { params: { taiKhoanId } });
+        const data3 = (res3.data as any)?.data ?? res3.data;
+        return { success: true, data: data3 };
+      }
+    }
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || error.message };
   }
