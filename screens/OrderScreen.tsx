@@ -1,34 +1,63 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useUser } from '../contexts/UserContext';
+import { getOrderDetail } from '../reposi/Order';
 
-export default function OrderScreen() {
-  const orders = [
-    { id: 'DH001', date: '10/10/2025', total: 3250000, status: 'Đã giao' },
-    { id: 'DH002', date: '15/10/2025', total: 950000, status: 'Đang giao' },
-  ];
+export default function OrderScreen({ route, navigation }: any) {
+  const { user } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+
+  // If backend has an order list endpoint, you can replace this with GET /DonHang/LayTheoTaiKhoan/{id}
+  // For now, when focusId is provided, we fetch that detail and display as a single card.
+  const focusId = route?.params?.focusId;
+
+  useEffect(() => {
+    if (focusId) {
+      loadSingle(focusId);
+    }
+  }, [focusId]);
+
+  const loadSingle = async (donHangId: number) => {
+    try {
+      setLoading(true);
+      const res = await getOrderDetail(donHangId);
+      if (res.success && res.data) {
+        setOrders([{ 
+          id: res.data.id, 
+          date: res.data.ngayDat, 
+          total: res.data.tongTien, 
+          status: res.data.trangThai 
+        }]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('OrderDetail', { donHangId: item.id })}>
+      <Text style={styles.code}>Mã đơn: {item.id}</Text>
+      <Text>Ngày đặt: {item.date || '-'}</Text>
+      <Text>Tổng tiền: {Number(item.total || 0).toLocaleString()}đ</Text>
+      <Text style={[styles.status, { color: '#d63384' }]}>{item.status || 'Đang xử lý'}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>📦 Đơn hàng của bạn</Text>
-      <FlatList
-        data={orders}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.code}>Mã đơn: {item.id}</Text>
-            <Text>Ngày đặt: {item.date}</Text>
-            <Text>Tổng tiền: {item.total.toLocaleString()}đ</Text>
-            <Text style={[styles.status,
-              item.status === 'Đã giao'
-                ? { color: 'green' }
-                : { color: '#d63384' },
-            ]}>
-              {item.status}
-            </Text>
-          </View>
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator />
+      ) : (
+        <FlatList
+          data={orders}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderItem}
+          ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#777' }}>Chưa có dữ liệu đơn hàng</Text>}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import api from "../Service/api";
+import { loginUser } from "../reposi/Login";
+import { useUser } from "../contexts/UserContext";
+import { testConnection } from "../utils/testConnection";
 
 type RootStackParamList = {
   Login: undefined;
@@ -37,9 +39,15 @@ type ApiErrorResponse = {
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { setUser } = useUser();
   const [email, setEmail] = useState("");
   const [matKhau, setMatKhau] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Test connection khi component mount
+    testConnection();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !matKhau) {
@@ -55,29 +63,27 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const response = await api.post<ApiResponse>("/TaiKhoan/DangNhap", {
-        email: email.trim(),
-        matKhau: matKhau,
-      });
+      console.log("🚀 Bắt đầu đăng nhập với:", { email: email.trim(), matKhau });
+      const result = await loginUser(email.trim(), matKhau);
+      console.log("📋 Kết quả đăng nhập:", result);
 
-      if (response.data) {
-        Alert.alert("Thành công", response.data.message);
+      if (result.success) {
+        console.log("✅ Đăng nhập thành công, user data:", result.data);
+        // Lưu thông tin user vào context
+        setUser(result.data);
+        Alert.alert("Thành công", result.message);
 
         // ✅ Điều hướng đúng tới tab Home trong MainTabs
         navigation.navigate("MainTabs", {
           screen: "Home",
-          params: { user: response.data.data },
         });
+      } else {
+        console.log("❌ Đăng nhập thất bại:", result.message);
+        Alert.alert("Lỗi", result.message || "Đăng nhập thất bại!");
       }
     } catch (error: any) {
-      if (error.response?.data) {
-        const errorData = error.response.data as ApiErrorResponse;
-        Alert.alert("Lỗi", errorData.message || "Đăng nhập thất bại!");
-      } else if (error.request) {
-        Alert.alert("Lỗi", "Không thể kết nối đến server!");
-      } else {
-        Alert.alert("Lỗi", "Đã xảy ra lỗi: " + error.message);
-      }
+      console.error("💥 Lỗi trong handleLogin:", error);
+      Alert.alert("Lỗi", "Đã xảy ra lỗi: " + error.message);
     } finally {
       setLoading(false);
     }

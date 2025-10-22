@@ -2,12 +2,23 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useUser } from '../contexts/UserContext';
+import { useCart } from '../contexts/CartContext';
 
 export default function ProfileScreen({ navigation }: any) {
+  const { user, setUser } = useUser();
+  const { cartItems } = useCart();
+
   const handleLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
       { text: 'Hủy' },
-      { text: 'Đăng xuất', onPress: () => navigation.replace('Login') },
+      { 
+        text: 'Đăng xuất', 
+        onPress: () => {
+          setUser(null); // Clear user data
+          navigation.replace('Login');
+        }
+      },
     ]);
   };
 
@@ -17,8 +28,8 @@ export default function ProfileScreen({ navigation }: any) {
 
       <View style={styles.profileBox}>
         <Ionicons name="person-circle-outline" size={70} color="#d63384" />
-        <Text style={styles.name}>Nguyễn Ngọc Minh</Text>
-        <Text style={styles.email}>user@gmail.com</Text>
+        <Text style={styles.name}>{user?.hoTen || 'Chưa đăng nhập'}</Text>
+        <Text style={styles.email}>{user?.email || 'user@gmail.com'}</Text>
       </View>
 
       <View style={styles.menu}>

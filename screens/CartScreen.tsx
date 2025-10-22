@@ -1,28 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCartByUser, CartItem } from "../reposi/Card";
+import { useUser } from "../contexts/UserContext";
+import { useCart } from "../contexts/CartContext";
 
-export default function CartScreen() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+export default function CartScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
-
-  const taiKhoanId = 6; // 🔹 tạm thời fix ID tài khoản (thay bằng ID đăng nhập thật sau)
+  const { user, isLoggedIn } = useUser();
+  const { cartItems, refreshCart } = useCart();
 
   useEffect(() => {
-    loadCart();
-  }, []);
+    if (isLoggedIn && user) {
+      loadCart();
+    } else {
+      setLoading(false);
+    }
+  }, [isLoggedIn, user]);
 
   const loadCart = async () => {
+    if (!user) return;
+    
     setLoading(true);
-    const res = await getCartByUser(taiKhoanId);
+    await refreshCart(user.id);
     setLoading(false);
-
-    if (res.success) {
-      setCartItems(res.data || []);
-    } else {
-      Alert.alert("❌ Lỗi", res.message);
-    }
   };
 
   const renderItem = ({ item }: { item: CartItem }) => (
@@ -41,11 +42,26 @@ export default function CartScreen() {
     </View>
   );
 
+  const total = cartItems.reduce((sum, i) => sum + i.gia * i.soLuong, 0);
+
+  const goCheckout = () => {
+    navigation.navigate("Checkout", { cartItems: cartItems.map(i => ({ id: i.id, name: i.tenSanPham, price: i.gia, quantity: i.soLuong })) });
+  };
+
   if (loading) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color="#d63384" />
       </View>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>🛒 Giỏ hàng của bạn</Text>
+        <Text style={styles.empty}>Vui lòng đăng nhập để xem giỏ hàng.</Text>
+      </SafeAreaView>
     );
   }
 
@@ -55,12 +71,20 @@ export default function CartScreen() {
       {cartItems.length === 0 ? (
         <Text style={styles.empty}>Giỏ hàng trống.</Text>
       ) : (
-        <FlatList
-          data={cartItems}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
+        <>
+          <FlatList
+            data={cartItems}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          />
+          <View style={styles.totalBar}>
+            <Text style={styles.totalText}>Tổng: {total.toLocaleString()}đ</Text>
+            <TouchableOpacity style={styles.checkoutBtn} onPress={goCheckout}>
+              <Text style={{ color: "#fff", fontWeight: "700" }}>Thanh toán</Text>
+            </TouchableOpacity>
+          </View>
+        </>
       )}
     </SafeAreaView>
   );
@@ -97,4 +121,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
+  totalBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 10, borderTopWidth: 1, borderColor: '#eee' },
+  totalText: { fontSize: 16, fontWeight: '700', color: '#333' },
+  checkoutBtn: { backgroundColor: '#d63384', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8 },
 });

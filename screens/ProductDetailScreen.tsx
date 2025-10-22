@@ -9,13 +9,22 @@ import {
   Alert,
 } from "react-native";
 import { addToCart } from "../reposi/Card";
+import { useUser } from "../contexts/UserContext";
+import { useCart } from "../contexts/CartContext";
 
 export default function ProductDetailScreen({ route }: any) {
   const { product } = route.params;
+  const { user, isLoggedIn } = useUser();
+  const { refreshCart } = useCart();
 
   const handleAddToCart = async () => {
+    if (!isLoggedIn || !user) {
+      Alert.alert("❌ Lỗi", "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      return;
+    }
+
     const request = {
-      taiKhoanId: 6, // ⚠️ Thay bằng user đăng nhập thật
+      taiKhoanId: user.id,
       sanPhamId: product.id,
       soLuong: 1,
     };
@@ -24,6 +33,8 @@ export default function ProductDetailScreen({ route }: any) {
 
     if (result.success) {
       Alert.alert("🛒 Thành công", result.message);
+      // Refresh cart sau khi thêm thành công
+      await refreshCart(user.id);
     } else {
       Alert.alert("❌ Lỗi", result.message);
     }

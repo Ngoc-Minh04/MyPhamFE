@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useUser } from "../contexts/UserContext";
 
 // 🧩 Import các màn hình
 import LoginScreen from "../screens/LoginScreen";
@@ -14,11 +15,12 @@ import CartScreen from "../screens/CartScreen";
 import OrderScreen from "../screens/OrderScreen";
 import CheckoutScreen from "../screens/CheckoutScreen";
 import ProductDetailScreen from "../screens/ProductDetailScreen";
+import OrderDetailScreen from "../screens/OrderDetailScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// ⚙️ Tabs chính (Home - Product - Profile)
+// ⚙️ Tabs chính (Home - Product - Cart - Profile)
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -31,6 +33,7 @@ function MainTabs() {
           let iconName: keyof typeof Ionicons.glyphMap = "home-outline";
           if (route.name === "Home") iconName = "home-outline";
           else if (route.name === "Product") iconName = "pricetags-outline";
+          else if (route.name === "Cart") iconName = "cart-outline";
           else if (route.name === "Profile") iconName = "person-outline";
           return <Ionicons name={iconName} size={24} color={color} />;
         },
@@ -45,6 +48,11 @@ function MainTabs() {
         name="Product"
         component={ProductScreen}
         options={{ title: "Sản phẩm" }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ title: "Giỏ hàng" }}
       />
       <Tab.Screen
         name="Profile"
@@ -76,11 +84,6 @@ export default function AppNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Cart"
-          component={CartScreen}
-          options={{ title: "Giỏ hàng" }}
-        />
-        <Stack.Screen
           name="Orders"
           component={OrderScreen}
           options={{ title: "Đơn hàng" }}
@@ -94,6 +97,11 @@ export default function AppNavigator() {
           name="ProductDetail"
           component={ProductDetailScreen}
           options={{ title: "Chi tiết sản phẩm" }}
+        />
+        <Stack.Screen
+          name="OrderDetail"
+          component={OrderDetailScreen}
+          options={{ title: "Chi tiết đơn hàng" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

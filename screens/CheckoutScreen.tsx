@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '../contexts/UserContext';
+import { useCart } from '../contexts/CartContext';
+import { createOrder } from '../reposi/Order';
 
 // ✅ Kiểu dữ liệu giỏ hàng
 type CartItem = {
@@ -21,11 +24,10 @@ type CartItem = {
 
 export default function CheckoutScreen({ route, navigation }: any) {
   // ✅ Nhận dữ liệu giỏ hàng truyền từ CartScreen
-  const cartItems: CartItem[] =
-    route?.params?.cartItems || [
-      { id: '1', name: 'Son MAC Ruby Woo', price: 650000, quantity: 1 },
-      { id: '2', name: 'Serum Estee Lauder', price: 2400000, quantity: 2 },
-    ];
+  const cartItems: CartItem[] = route?.params?.cartItems || [];
+
+  const { user } = useUser();
+  const { clearCartLocal } = useCart();
 
   // ✅ Tính tổng tiền
   const total = cartItems.reduce(
@@ -34,52 +36,42 @@ export default function CheckoutScreen({ route, navigation }: any) {
   );
 
   // ✅ Thông tin người nhận
-  const [receiver, setReceiver] = useState('Nguyễn Mỹ Phẩm');
-  const [phone, setPhone] = useState('0909123456');
-  const [address, setAddress] = useState('123 Đường Hoa Hồng, Q.1, TP.HCM');
+  const [receiver, setReceiver] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK'>('COD');
+  const [loading, setLoading] = useState(false);
 
-  // ✅ Lưu đơn hàng vào AsyncStorage (sẵn sàng kết nối API sau này)
   const handleConfirm = async () => {
-    const newOrder = {
-      id: Date.now().toString(),
-      customerName: receiver,
-      phoneNumber: phone,
-      address,
-      paymentMethod,
-      totalPrice: total,
-      createdAt: new Date().toISOString(),
-      status: 'Đang xử lý',
-      items: cartItems.map((item: CartItem) => ({
-        productId: item.id,
-        productName: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-    };
+    if (!user) {
+      Alert.alert('Lỗi', 'Vui lòng đăng nhập trước khi đặt hàng.');
+      return;
+    }
+    if (cartItems.length === 0) {
+      Alert.alert('Lỗi', 'Giỏ hàng trống.');
+      return;
+    }
 
+    setLoading(true);
     try {
-      const existing = await AsyncStorage.getItem('orders');
-      const orders = existing ? JSON.parse(existing) : [];
-      orders.push(newOrder);
-      await AsyncStorage.setItem('orders', JSON.stringify(orders));
-
-      // 👉 Sau này chỉ cần thay bằng API call:
-      // await fetch(`${API_URL}/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newOrder) });
-
-      Alert.alert(
-        '✅ Đặt hàng thành công!',
-        `Cảm ơn ${receiver}!\nTổng thanh toán: ${total.toLocaleString()}đ`,
-        [
-          {
-            text: 'Xem đơn hàng',
-            onPress: () => navigation.navigate('Orders'),
-          },
-        ]
-      );
-    } catch (error) {
-      console.error('Lỗi khi lưu đơn hàng:', error);
-      Alert.alert('Lỗi', 'Không thể lưu đơn hàng. Vui lòng thử lại.');
+      const payload = {
+        taiKhoanId: user.id,
+        items: cartItems.map(i => ({ sanPhamId: Number(i.id), soLuong: i.quantity, donGia: i.price })),
+      };
+      const res = await createOrder(payload);
+      if (res.success && res.data) {
+        // clear cart locally after successful order
+        clearCartLocal();
+        Alert.alert('✅ Đặt hàng thành công!', `Mã đơn ${res.data.donHangId}\nTổng: ${total.toLocaleString()}đ`, [
+          { text: 'Xem chi tiết', onPress: () => navigation.replace('OrderDetail', { donHangId: res.data?.donHangId }) },
+        ]);
+      } else {
+        Alert.alert('Lỗi', res.message || 'Không thể tạo đơn hàng');
+      }
+    } catch (e: any) {
+      Alert.alert('Lỗi', e.message || 'Không thể tạo đơn hàng');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,8 +160,8 @@ export default function CheckoutScreen({ route, navigation }: any) {
         </View>
 
         {/* --- Nút xác nhận --- */}
-        <TouchableOpacity style={styles.btnConfirm} onPress={handleConfirm}>
-          <Text style={styles.btnText}>Xác nhận đặt hàng</Text>
+        <TouchableOpacity style={styles.btnConfirm} onPress={handleConfirm} disabled={loading}>
+          <Text style={styles.btnText}>{loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
