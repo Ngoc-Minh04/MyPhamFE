@@ -44,6 +44,47 @@ export default function ProductScreen({ navigation }: any) {
     loadProducts(id ?? undefined);
   };
 
+  // 💄 Ảnh mặc định cho các sản phẩm (giống HomeScreen)
+  const getProductImage = (productName: string, originalImage?: string) => {
+    const imageMap: Record<string, string> = {
+      // Kem dưỡng da
+      "kem dưỡng": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",
+      "la mer": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",
+      
+      // Son môi
+      "son": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
+      "dior": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
+      "mac": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
+      
+      // Nước hoa
+      "nước hoa": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
+      "chanel": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
+      "perfume": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
+      
+      // Serum
+      "serum": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
+      "vitamin": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
+      
+      // Kem chống nắng
+      "chống nắng": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
+      "sunscreen": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
+      "anessa": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
+    };
+
+    const lowerName = productName.toLowerCase();
+    for (const [keyword, imageUrl] of Object.entries(imageMap)) {
+      if (lowerName.includes(keyword)) {
+        return imageUrl;
+      }
+    }
+
+    if (originalImage) {
+      return originalImage;
+    }
+
+    return "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400";
+  };
+
   // Tìm kiếm
   const filteredProducts = products.filter((p) =>
     p.tenSanPham.toLowerCase().includes(searchText.toLowerCase())
@@ -141,9 +182,7 @@ export default function ProductScreen({ navigation }: any) {
               >
                 <Image
                   source={{
-                    uri:
-                      item.hinhAnh ||
-                      "https://cdn-icons-png.flaticon.com/512/679/679720.png",
+                    uri: getProductImage(item.tenSanPham, item.hinhAnh),
                   }}
                   style={styles.image}
                 />
@@ -220,6 +259,7 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 10,
     resizeMode: "cover",
+    backgroundColor: "#f9f9f9",
   },
   name: {
     fontSize: 14,
@@ -227,6 +267,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
     color: "#333",
+    minHeight: 40,
   },
   price: { fontSize: 14, fontWeight: "bold", color: "#d63384", marginTop: 5 },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
