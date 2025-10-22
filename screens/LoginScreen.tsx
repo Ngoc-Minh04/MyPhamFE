@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import { loginUser } from "../reposi/Login";
 import { useUser } from "../contexts/UserContext";
 import { testConnection } from "../utils/testConnection";
@@ -22,21 +23,6 @@ type RootStackParamList = {
   MainTabs: { screen?: string; params?: any };
 };
 
-type UserData = {
-  id: number;
-  hoTen: string;
-  email: string;
-};
-
-type ApiResponse = {
-  message: string;
-  data: UserData;
-};
-
-type ApiErrorResponse = {
-  message: string;
-};
-
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { setUser } = useUser();
@@ -45,7 +31,6 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Test connection khi component mount
     testConnection();
   }, []);
 
@@ -63,27 +48,16 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      console.log("🚀 Bắt đầu đăng nhập với:", { email: email.trim(), matKhau });
       const result = await loginUser(email.trim(), matKhau);
-      console.log("📋 Kết quả đăng nhập:", result);
-
       if (result.success) {
-        console.log("✅ Đăng nhập thành công, user data:", result.data);
-        // Lưu thông tin user vào context
         setUser(result.data);
         Alert.alert("Thành công", result.message);
-
-        // ✅ Điều hướng đúng tới tab Home trong MainTabs
-        navigation.navigate("MainTabs", {
-          screen: "Home",
-        });
+        navigation.navigate("MainTabs", { screen: "Home" });
       } else {
-        console.log("❌ Đăng nhập thất bại:", result.message);
         Alert.alert("Lỗi", result.message || "Đăng nhập thất bại!");
       }
     } catch (error: any) {
-      console.error("💥 Lỗi trong handleLogin:", error);
-      Alert.alert("Lỗi", "Đã xảy ra lỗi: " + error.message);
+      Alert.alert("Lỗi", "Không thể kết nối tới server!");
     } finally {
       setLoading(false);
     }
@@ -96,8 +70,8 @@ const LoginScreen = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.formContainer}>
-          <Text style={styles.title}>Đăng Nhập</Text>
-          <Text style={styles.subtitle}>Chào mừng bạn quay trở lại!</Text>
+          <Text style={styles.title}>💋 MyBeauty</Text>
+          <Text style={styles.subtitle}>Chào mừng bạn quay lại với thế giới sắc đẹp!</Text>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
@@ -109,6 +83,7 @@ const LoginScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
+              placeholderTextColor="#bbb"
             />
           </View>
 
@@ -121,19 +96,28 @@ const LoginScreen = () => {
               onChangeText={setMatKhau}
               secureTextEntry
               editable={!loading}
+              placeholderTextColor="#bbb"
             />
           </View>
 
+          {/* 🔥 Nút gradient hồng chuyển tím */}
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
             disabled={loading}
+            onPress={handleLogin}
+            activeOpacity={0.9}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Đăng nhập</Text>
-            )}
+            <LinearGradient
+              colors={["#ff66b2", "#d63384"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Đăng nhập</Text>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
@@ -149,62 +133,70 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, backgroundColor: "#ffe6f0" }, // nền hồng nhạt
   scrollView: { flexGrow: 1, justifyContent: "center", padding: 20 },
   formContainer: {
     backgroundColor: "#fff",
-    borderRadius: 15,
+    borderRadius: 20,
     padding: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: "#ff80bf",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#d63384",
     textAlign: "center",
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#666",
-    marginBottom: 30,
     textAlign: "center",
+    marginBottom: 30,
   },
   inputContainer: { marginBottom: 20 },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
+    color: "#d63384",
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: "#f8f8f8",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: "#fff",
+    borderWidth: 1.5,
+    borderColor: "#f7a1c4",
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
+    color: "#333",
   },
-  button: {
-    backgroundColor: "#007AFF",
-    borderRadius: 10,
-    padding: 16,
+  gradientButton: {
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: "center",
-    marginTop: 10,
+    justifyContent: "center",
+    shadowColor: "#d63384",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  buttonDisabled: { backgroundColor: "#ccc" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  buttonText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
   registerContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 25,
   },
-  registerText: { color: "#666", fontSize: 14 },
-  registerLink: { color: "#007AFF", fontSize: 14, fontWeight: "600" },
+  registerText: { color: "#555", fontSize: 14 },
+  registerLink: { color: "#d63384", fontWeight: "700", fontSize: 14 },
 });
 
 export default LoginScreen;
