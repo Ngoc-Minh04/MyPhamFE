@@ -8,6 +8,7 @@ export default function OrderDetailScreen({ route }: any) {
   const donHangId: number = route?.params?.donHangId;
   const ngayDatFromList: string | undefined = route?.params?.ngayDat;
   const trangThaiFromList: string | undefined = route?.params?.trangThai;
+  const hidePay: boolean = !!route?.params?.hidePay;
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
@@ -96,9 +97,11 @@ export default function OrderDetailScreen({ route }: any) {
         ListEmptyComponent={<Text style={{ color: '#777' }}>Chưa có thanh toán</Text>}
       />
 
-      <TouchableOpacity style={styles.payBtn} onPress={onPay}>
-        <Text style={{ color: '#fff', fontWeight: '700' }}>Thanh toán</Text>
-      </TouchableOpacity>
+      {!hidePay && (
+        <TouchableOpacity style={styles.payBtn} onPress={onPay}>
+          <Text style={{ color: '#fff', fontWeight: '700' }}>Thanh toán</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }

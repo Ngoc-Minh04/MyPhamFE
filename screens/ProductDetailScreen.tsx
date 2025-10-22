@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ export default function ProductDetailScreen({ route }: any) {
   const { product } = route.params;
   const { user, isLoggedIn } = useUser();
   const { refreshCart } = useCart();
+  const [quantity, setQuantity] = useState<number>(1);
 
   const handleAddToCart = async () => {
     if (!isLoggedIn || !user) {
@@ -26,7 +27,7 @@ export default function ProductDetailScreen({ route }: any) {
     const request = {
       taiKhoanId: user.id,
       sanPhamId: product.id,
-      soLuong: 1,
+      soLuong: quantity,
     };
 
     const result = await addToCart(request);
@@ -54,6 +55,15 @@ export default function ProductDetailScreen({ route }: any) {
         <Text style={styles.name}>{product.tenSanPham}</Text>
         <Text style={styles.price}>{product.gia.toLocaleString()}đ</Text>
         {product.moTa && <Text style={styles.description}>{product.moTa}</Text>}
+        <View style={styles.qtyRow}>
+          <TouchableOpacity style={styles.qtyBtn} onPress={() => setQuantity(q => Math.max(1, q - 1))}>
+            <Text style={styles.qtyBtnText}>-</Text>
+          </TouchableOpacity>
+          <Text style={styles.qtyValue}>{quantity}</Text>
+          <TouchableOpacity style={styles.qtyBtn} onPress={() => setQuantity(q => q + 1)}>
+            <Text style={styles.qtyBtnText}>+</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
@@ -80,6 +90,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   description: { fontSize: 15, color: "#555", lineHeight: 22, marginTop: 8 },
+  qtyRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
+  qtyBtn: { width: 36, height: 36, borderRadius: 8, backgroundColor: '#f1f1f1', justifyContent: 'center', alignItems: 'center' },
+  qtyBtnText: { fontSize: 18, fontWeight: '700', color: '#333' },
+  qtyValue: { marginHorizontal: 12, fontSize: 16, fontWeight: '700', minWidth: 24, textAlign: 'center' },
   addButton: {
     backgroundColor: "#d63384",
     margin: 16,

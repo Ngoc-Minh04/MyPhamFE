@@ -51,6 +51,7 @@ export default function OrderScreen({ route, navigation }: any) {
           donHangId: item.id,
           ngayDat: item.ngayDat || item.date,
           trangThai: item.trangThai || item.status,
+          hidePay: true,
         })
       }
     >
