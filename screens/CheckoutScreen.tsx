@@ -161,7 +161,7 @@ export default function CheckoutScreen({ route, navigation }: any) {
 
         {/* --- Nút xác nhận --- */}
         <TouchableOpacity style={styles.btnConfirm} onPress={handleConfirm} disabled={loading}>
-          <Text style={styles.btnText}>{loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}</Text>
+          <Text style={styles.btnText}>{loading ? 'Đang xử lý...' : 'Xác nhận thanh toán'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
