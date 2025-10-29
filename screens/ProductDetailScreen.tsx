@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
+import {View,Text,Image,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -52,20 +49,16 @@ export default function ProductDetailScreen({ route }: any) {
   }, [product.id]);
 
   // ✅ Hàm chọn ảnh mặc định (giống HomeScreen)
-  const getProductImage = (productName: string, originalImage?: string) => {
-    const imageMap: Record<string, string> = {
-      "kem dưỡng": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800",
-      "son": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800",
-      "nước hoa": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800",
-      "serum": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800",
-      "chống nắng": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=800",
-    };
-    const lower = productName.toLowerCase();
-    for (const [key, val] of Object.entries(imageMap)) {
-      if (lower.includes(key)) return val;
-    }
-    return originalImage || "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800";
-  };
+  // const getProductImage = (productName: string, originalImage?: string) => {
+  //   const imageMap: Record<string, string> = {
+      
+  //   };
+  //   const lower = productName.toLowerCase();
+  //   for (const [key, val] of Object.entries(imageMap)) {
+  //     if (lower.includes(key)) return val;
+  //   }
+  //   return originalImage || "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800";
+  // };
 
   // ✅ Thêm vào giỏ hàng (kiểm tra tồn kho, cập nhật tồn sau khi backend trừ kho)
   const handleAddToCart = async () => {
@@ -132,10 +125,11 @@ export default function ProductDetailScreen({ route }: any) {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{
-          uri: getProductImage(productDetail.tenSanPham, productDetail.hinhAnh),
-        }}
+          <Image
+          source={{
+            uri:
+              productDetail.hinhAnh   
+          }}
         style={styles.image}
       />
       <View style={styles.infoContainer}>

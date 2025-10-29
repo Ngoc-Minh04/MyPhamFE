@@ -62,8 +62,8 @@ export default function CheckoutScreen({ route, navigation }: any) {
       if (res.success && res.data) {
         // clear cart locally after successful order
         clearCartLocal();
-        Alert.alert('✅ Đặt hàng thành công!', `Mã đơn ${res.data.donHangId}\nTổng: ${total.toLocaleString()}đ`, [
-          { text: 'Xem chi tiết', onPress: () => navigation.replace('OrderDetail', { donHangId: res.data?.donHangId }) },
+        Alert.alert('✅ Xác nhận đơn hàng!', `Mã đơn ${res.data.donHangId}\nTổng: ${total.toLocaleString()}đ`, [
+          { text: 'Thanh toán', onPress: () => navigation.replace('OrderDetail', { donHangId: res.data?.donHangId }) },
         ]);
       } else {
         Alert.alert('Lỗi', res.message || 'Không thể tạo đơn hàng');
@@ -78,7 +78,7 @@ export default function CheckoutScreen({ route, navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        <Text style={styles.header}>🧾 Thông tin thanh toán</Text>
+        <Text style={styles.header}>🧾 Thông tin đặt hàng</Text>
 
         {/* --- Thông tin người nhận --- */}
         <View style={styles.box}>
@@ -161,7 +161,7 @@ export default function CheckoutScreen({ route, navigation }: any) {
 
         {/* --- Nút xác nhận --- */}
         <TouchableOpacity style={styles.btnConfirm} onPress={handleConfirm} disabled={loading}>
-          <Text style={styles.btnText}>{loading ? 'Đang xử lý...' : 'Xác nhận thanh toán'}</Text>
+          <Text style={styles.btnText}>{loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
