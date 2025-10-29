@@ -48,27 +48,7 @@ export default function ProductScreen({ navigation }: any) {
   const getProductImage = (productName: string, originalImage?: string) => {
     const imageMap: Record<string, string> = {
       // Kem dưỡng da
-      "kem dưỡng": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",
-      "la mer": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",
-      
-      // Son môi
-      "son": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
-      "dior": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
-      "mac": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400",
-      
-      // Nước hoa
-      "nước hoa": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
-      "chanel": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
-      "perfume": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400",
-      
-      // Serum
-      "serum": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
-      "vitamin": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
-      
-      // Kem chống nắng
-      "chống nắng": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
-      "sunscreen": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
-      "anessa": "https://images.unsplash.com/photo-1556228852-80c035a65f7c?w=400",
+
     };
 
     const lowerName = productName.toLowerCase();
